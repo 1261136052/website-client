@@ -104,6 +104,10 @@
         <el-descriptions-item label="点赞数量">
           {{ form.article.likeCount }}
         </el-descriptions-item>
+
+        <el-descriptions-item label="评论数量">
+          {{ form.article.commentCount }}
+        </el-descriptions-item>
         <!-- <el-descriptions-item label="Address">No.1188, Wuzhong Avenue, Wuzhong District, Suzhou, Jiangsu
                               Province</el-descriptions-item> -->
       </el-descriptions>
@@ -114,7 +118,7 @@
       <template #footer>
         <span class="dialog-footer">
           <el-button @click="dialogTableVisible = false">退出</el-button>
-          <el-button type="primary" @click="dialogTableVisible = false, commentDialog = true,loadMsg(1)">
+          <el-button type="primary" @click="dialogTableVisible = false, commentDialog = true,loadMsg()">
             聊一句吧
           </el-button>
         </span>
@@ -130,8 +134,9 @@
       </div>
 
       <div class="example-pagination-block">
-        <el-pagination :page-size="5" :pager-count="commentPageCount" layout="prev, pager, next" :total="commentTotal"
-        @next-click="loadMsg(1)" @prev-click="loadMsg(-1)" />
+
+        <el-pagination layout="prev, pager, next" v-model:current-page="commentPageNum" :page-count="commentPageCount"
+            @change="loadMsg()" />
         <div>
           <div>
             <span v-for="emoji in form.emojis" :key="emoji" @click="addEmoji(emoji)">{{ emoji }}</span>
@@ -160,11 +165,11 @@ import { shortcuts } from '../../util/common'
 import { message2 } from '../../util/WebSocket'
 const color2 = ref("black")
 const commentPageCount = ref(0)
-const commentPageNum = ref(0)
+const commentPageNum = ref(1)
 
-const commentTotal= ref(0)
-const loadMsg = (val)=>{
-  commentPageNum.value += val
+// const commentTotal= ref(0)
+const loadMsg = ()=>{
+// commentPageNum.value += val
   axios.get('/comment/query/'+form.article.id+"/"+commentPageNum.value+"/"+"5",{
     params: {
       "content":textarea.value
@@ -172,7 +177,7 @@ const loadMsg = (val)=>{
   } ).then(response => {
     if (response.data.code == 200) {
       form.messages = response.data.data.list as message2[]
-      commentTotal.value = response.data.data.pager.recordCount 
+      commentPageCount.value = response.data.data.pager.pageCount 
       console.log(commentPageNum.value)
       console.log(response.data.data)
     }
@@ -192,7 +197,7 @@ const send = ()=>{
     if (response.data.code == 200) {
       // search()
       form.addData = new article()
-      loadMsg(0)
+      loadMsg()
       console.log(response.data.data)
       ElNotification({
         title: 'success',
@@ -350,7 +355,6 @@ const loadArticle = (articleId) => {
   }).then(response => {
     if (response.data.code == 200) {
       form.article = response.data.data as article
-      commentPageNum.value = 0
       isAttention()
     }
   })

@@ -51,6 +51,7 @@ export class article{
     publishDate:Date
     weight:number
     likeCount:number
+    commentCount:number
 }
 
 export class category2 {
