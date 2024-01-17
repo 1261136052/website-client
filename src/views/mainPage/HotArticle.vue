@@ -6,7 +6,7 @@
     <div style="max-height:590px;overflow:auto" infinite-scroll-distance='100' infinite-scroll-immediate="false"
       v-infinite-scroll="load">
       <el-table :data="data.data" stripe style="width: 100% ;">
-        <el-table-column label="热帖排行" type="index" width="50" />
+        <el-table-column label="热帖排行" type="index" width="120" />
         <el-table-column prop="cover" label="封面">
           <template #default="scope">
             <el-avatar shape="square" :size="100" fit="fit" :src="'http://127.0.0.1:8001' + scope.row.cover" />
