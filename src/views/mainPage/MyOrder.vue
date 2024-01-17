@@ -8,6 +8,7 @@
         <el-table-column prop="goods.price" label="售价￥" width="100" />
         <el-table-column prop="goods.transactionDate" label="交易时间" />
         <el-table-column prop="goods.transactionAddress" label="交易地点" />
+        <el-table-column prop="goods.status" label="状态" />
 
 
         <el-table-column fixed="right" label="操作" width="60">
@@ -37,6 +38,28 @@
       </el-table>
     </el-tab-pane>
 
+    <el-tab-pane label="待确认" name="third">
+      <el-table :data="goData.waitOrder" style="width: 100%">
+        <el-table-column prop="goods.title" label="商品名称" width="120" />
+        <el-table-column prop="buyDate" label="购买时间" width="180" />
+        <el-table-column prop="buyerPhone" label="买家预留电话" width="100" />
+        <el-table-column prop="goods.price" label="售价￥" width="100" />
+        <el-table-column prop="goods.transactionDate" label="交易时间" />
+        <el-table-column prop="goods.transactionAddress" label="交易地点" />
+
+
+        <el-table-column fixed="right" label="操作" width="100">
+          <template #default="scope">
+            <el-button link type="primary" size="small"
+             @click="confirm(scope.$index, scope.row)">确认交易</el-button>
+             <el-button link type="primary" size="small"
+             @click="noConfirm(scope.$index, scope.row)">拒绝交易</el-button>
+            <el-button link type="primary" size="small"
+             @click="detail(scope.$index, scope.row),dialogFormVisible=true">Detail</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+    </el-tab-pane>
 
     <el-dialog v-model="dialogFormVisible" title="商品详细页" style="height: 650px;" width="600px">
 
@@ -94,6 +117,7 @@ let good: Goods = new Goods
 let goData = reactive({
   buyOrder: data,
   sellOrder: data,
+  waitOrder: data,
   goods: good,
   srcList: strs
 })
@@ -119,6 +143,15 @@ const fun1 = () => {
   }).then(response => {
     if (response.data.code == 200) {
       goData.sellOrder = response.data.data as order[]
+      console.log(response.data.data)
+      console.log("succes")
+    }
+  })
+
+  axios.get('/order/listWaitGoods', {
+  }).then(response => {
+    if (response.data.code == 200) {
+      goData.waitOrder = response.data.data as order[]
       console.log(response.data.data)
       console.log("succes")
     }
@@ -156,6 +189,91 @@ const activeName = ref('first')
 
 const handleClick = (tab: TabsPaneContext, event: Event) => {
   console.log(tab, event)
+}
+
+const noConfirm= (index, row) => {
+    ElMessageBox.confirm(
+        '是否拒绝！',
+        'Warning',
+        {
+            confirmButtonText: 'OK',
+            cancelButtonText: 'Cancel',
+            type: 'warning',
+        }
+    )
+        .then(() => {
+            ElMessage({
+                type: 'success',
+                message: 'Delete completed',
+            })
+
+            axios.get('/order/confirm/' + row.id+'/'+1, {
+                params: {
+                }
+            }).then(response => {
+                if (response.data.code == 200) {
+                    fun1()
+                    ElMessage({
+                        type: 'success',
+                        message: '成功',
+                    })
+                } else {
+                    ElMessage({
+                        type: 'info',
+                        message: 'Delete canceled',
+                    })
+                }
+            })
+        })
+        .catch(() => {
+            ElMessage({
+                type: 'info',
+                message: 'Delete canceled',
+            })
+        })
+}
+
+
+const confirm= (index, row) => {
+    ElMessageBox.confirm(
+        '是否确认！',
+        'Warning',
+        {
+            confirmButtonText: 'OK',
+            cancelButtonText: 'Cancel',
+            type: 'warning',
+        }
+    )
+        .then(() => {
+            ElMessage({
+                type: 'success',
+                message: 'Delete completed',
+            })
+
+            axios.get('/order/confirm/' + row.id+'/'+0, {
+                params: {
+                }
+            }).then(response => {
+                if (response.data.code == 200) {
+                    fun1()
+                    ElMessage({
+                        type: 'success',
+                        message: '成功',
+                    })
+                } else {
+                    ElMessage({
+                        type: 'info',
+                        message: 'Delete canceled',
+                    })
+                }
+            })
+        })
+        .catch(() => {
+            ElMessage({
+                type: 'info',
+                message: 'Delete canceled',
+            })
+        })
 }
 </script>
 
