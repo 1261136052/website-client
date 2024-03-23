@@ -1,7 +1,8 @@
 <template>
     <div style="background-color: white;width: 1000px;height: 660px;flex-wrap: wrap;display: flex;">
         <div style="width: 1000px;height: 50px;background-color: white;line-height: 50px;">
-            <div style="width: 80px;height: 25px;"><el-button round @click="dialog = true">+新增商品</el-button></div>
+            <div style="width: 80px;height: 25px;"><el-button round @click="dialog = true, initFrom()">+新增商品</el-button>
+            </div>
         </div>
         <el-card v-for="(g, index) in goodss.goodss" :key="index" :body-style="{ padding: '0px' }"
             style="width: 205px;height: 310px; margin: 20px;">
@@ -10,15 +11,16 @@
                 <span>{{ g.title }}</span>
                 <div class="bottom">
                     <!-- <time class="time">{{ currentDate }}</time> -->
-                    
+
                     <el-button type="primary" :icon="Edit" round
                         @click="upadteData(g.id), centerDialogVisible = true">修改</el-button>
-                    <el-button @click="deleteDialog=true,deleteId = g.id" type="danger" :icon="Delete" round>删除</el-button>
+                    <el-button @click="deleteDialog = true, deleteId = g.id" type="danger" :icon="Delete"
+                        round>删除</el-button>
                 </div>
             </div>
         </el-card>
 
-        <el-drawer ref="drawerRef" v-model="dialog" title="I have a nested form inside!" :before-close="handleClose"
+        <el-drawer ref="drawerRef" v-model="dialog" title="商品信息表单" :before-close="handleClose"
             direction="ltr" class="demo-drawer">
             <div class="demo-drawer__content">
                 <el-form :model="form">
@@ -101,7 +103,7 @@
             <template #footer>
                 <span class="dialog-footer">
                     <el-button @click="deleteDialog = false">Cancel</el-button>
-                    <el-button type="primary" @click="deleteDialog = false,deleteGooods()">
+                    <el-button type="primary" @click="deleteDialog = false, deleteGooods()">
                         Confirm
                     </el-button>
                 </span>
@@ -119,7 +121,7 @@ import { category, Response, Goods } from "../../util/clazz"
 import {
     Delete, Edit, UploadFilled
 } from '@element-plus/icons-vue'
-import { tr } from 'element-plus/es/locale';
+import { fi, tr } from 'element-plus/es/locale';
 import { Plus } from '@element-plus/icons-vue'
 import type { UploadProps, UploadUserFile, UploadFiles, UploadFile } from 'element-plus'
 import { sleep } from '../../util/check'
@@ -140,6 +142,12 @@ let status = reactive([])
 let goodss = reactive({
     goodss: test
 })
+const initFrom = () => {
+    form = reactive(new Goods)
+    form.userId = UserData.id
+    form.filesIds = []
+    fileList = ref<UploadUserFile[]>([])
+}
 const categorylist = () => {
     axios.get('/goods/listGoodsCategory', {
     }).then(response => {
@@ -288,13 +296,21 @@ const dialogVisible = ref(false)
 let maxSize = ref(false)
 const handleRemove: UploadProps['onRemove'] = (uploadFile, uploadFiles) => {
     /*  eslint-disable*/
+    console.log(uploadFile)
+
     let res = uploadFile.response as Response
-    let index = form.filesIds.indexOf(res.file.id)
+    let fileId = -1
+    if(res != null){
+        fileId = res.file.id
+    }else{
+        fileId = uploadFile.uid
+    }
+    let index = form.filesIds.indexOf(fileId)
     if (index > -1) {
         form.filesIds.splice(index, 1)
     }
     if (uploadFiles.length == 0) form.cover = ''
-    console.log(uploadFile, uploadFiles, form.filesIds)
+    console.log(form.filesIds.length)
 }
 
 const handlePictureCardPreview: UploadProps['onPreview'] = (uploadFile) => {
@@ -313,12 +329,22 @@ const onSuccess = (response: any, uploadFile: UploadFile, uploadFiles: UploadFil
 
 
 const upadteData = (val: any) => {
+    initFrom()
     axios.get('/goods/queryGoodsById/' + val, {
     }).then(response => {
         if (response.data.code == 200) {
             // form = new Goods
             form =reactive(response.data.data)
             form.filesIds = []
+            for( let file of form.files){
+                form.filesIds.push(file.id)
+                fileList.value.push({
+                    uid:file.id,
+                    url:'http://127.0.0.1:8001/'+file.path,
+                    name:file.name
+                })
+            }
+
             console.log(form)
             console.log("succes")
         }
@@ -326,32 +352,32 @@ const upadteData = (val: any) => {
     drawerRef.value!.close()
 }
 const deleteId = ref()
-const deleteGooods  = ()=>{
-    axios.get('/goods/delete/'+deleteId.value).then(response => {
-            if (response.status == 500) {
-                ElNotification({
-                    title: 'error',
-                    message: response.status + '未知错误',
-                    type: 'error',
-                })
-            }
-            if (response.data.code == -1) {
-                ElNotification({
-                    title: 'error',
-                    message: response.data.error,
-                    type: 'error',
-                })
-            } else if (response.data.code == 200) {
-                ElNotification({
-                    title: 'Success',
-                    message: '删除成功',
-                    type: 'success',
-                })
-                categorylist()
-            }
-            console.log(response.status)
+const deleteGooods = () => {
+    axios.get('/goods/delete/' + deleteId.value).then(response => {
+        if (response.status == 500) {
+            ElNotification({
+                title: 'error',
+                message: response.status + '未知错误',
+                type: 'error',
+            })
+        }
+        if (response.data.code == -1) {
+            ElNotification({
+                title: 'error',
+                message: response.data.error,
+                type: 'error',
+            })
+        } else if (response.data.code == 200) {
+            ElNotification({
+                title: 'Success',
+                message: '删除成功',
+                type: 'success',
+            })
+            categorylist()
+        }
+        console.log(response.status)
 
-        })
+    })
 }
 </script>
 

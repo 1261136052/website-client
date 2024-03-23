@@ -12,7 +12,8 @@
                     start-placeholder="Start date" end-placeholder="End date" />
             </div>
             <div style="margin-right: 20px;">
-                <el-input v-model="input1" class="w-50 m-2" size="large" placeholder="Please Input" :prefix-icon="Search" />
+                <el-input v-model="input1" class="w-50 m-2" size="large" placeholder="Please Input"
+                    :prefix-icon="Search" />
             </div>
             <div>
                 <el-button type="primary" @click="search()">
@@ -23,7 +24,8 @@
 
         <el-card v-for="(g, index) in goodss.goodss" :key="index" :body-style="{ padding: '0px' }"
             style="width: 205px;height: 310px; margin: 20px;">
-            <img :src="'http://127.0.0.1:8001' + g.cover" class="image" fit="cover" style="width: 205px; height: 205px;" />
+            <img :src="'http://127.0.0.1:8001' + g.cover" class="image" fit="cover"
+                style="width: 205px; height: 205px;" />
             <div style="padding: 14px">
                 <span>{{ g.title }}</span>
                 <div class="bottom">
@@ -32,6 +34,8 @@
                 </div>
             </div>
         </el-card>
+        <el-pagination layout="prev, pager, next" v-model:current-page="pageNum" :page-count="pageCount"
+            @change="search()" />
         <el-dialog v-model="dialogFormVisible" title="商品详细页" style="height: 650px;" width="600px">
             <!-- <el-table :data="gridData">
                 <el-table-column property="date" label="Date" width="150" />
@@ -92,7 +96,6 @@
                 </span>
             </template>
         </el-dialog>
-
     </div>
 </template>
 
@@ -105,7 +108,7 @@ import axios from 'axios'
 import { category, Response, Goods, file } from "../../util/clazz"
 import { ReqChat, user } from "../../util/WebSocket"
 import { testStore } from "../../stores/TestStore"
-import { shortcuts} from '../../util/common' 
+import { shortcuts } from '../../util/common'
 
 const store = testStore()
 const UserData = store.testU
@@ -124,6 +127,8 @@ const com = computed(() => {
     }
 })
 let good: Goods = new Goods
+var pageCount = ref(0)
+var pageNum = ref(1)
 
 let goods = reactive({
     data: good,
@@ -156,9 +161,10 @@ const categorylist = () => {
         }
     })
 
-    axios.get('/goods/list/1/999', {params:{
-        
-    }
+    axios.get('/goods/list/1/999', {
+        params: {
+
+        }
     }).then(response => {
         if (response.data.code == 200) {
             goodss.goodss = response.data.data.list
@@ -268,16 +274,18 @@ const buyGoods = () => {
 
 const currentDate = ref(new Date())
 
-const search = ()=>{
-    axios.get('/goods/list/1/999', {params:{
-        'keyword': input1.value,
-        'startTime': value3.value[0],
-        'endTime': value3.value[1],
-        'categoryId':value.value
-    }
+const search = () => {
+    axios.get('/goods/list/' + pageNum.value + '/8', {
+        params: {
+            'keyword': input1.value,
+            'startTime': value3.value[0],
+            'endTime': value3.value[1],
+            'categoryId': value.value
+        }
     }).then(response => {
         if (response.data.code == 200) {
             goodss.goodss = response.data.data.list
+            pageCount.value = response.data.data.pager.pageCount
             console.log(response.data.data)
         }
     })
@@ -311,4 +319,3 @@ search()
     display: block;
 }
 </style>
-

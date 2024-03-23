@@ -89,7 +89,7 @@
 </template>
    
 <script lang="ts" setup>
-import { reactive, ref, getCurrentInstance } from 'vue'
+import { reactive, ref, getCurrentInstance, computed } from 'vue'
 import { FormInstance, FormRules, ElNotification, ElMessageBox } from 'element-plus'
 import axios from 'axios'
 import { useRoute, useRouter } from 'vue-router';
@@ -106,6 +106,7 @@ const route = useRoute()
 
 const ruleFormRef = ref<FormInstance>()
 const ruleFormRef2 = ref<FormInstance>()
+
 
 const validatePass = (rule: any, value: any, callback: any) => {
     if (value === '') {
