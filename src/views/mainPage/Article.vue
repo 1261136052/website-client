@@ -332,7 +332,7 @@ const add = () => {
   form.addData = new article()
 }
 
-const place = "1231"
+const place = "请输入文章内容"
 const quillRef = ref();
 watch(quillRef, async (val) => {
   const quillInstance = val.quillInstance;
@@ -437,7 +437,7 @@ const attention = () => {
 }
 
 var pageNum: number = 1
-var noMore: boolean = false
+const noMore = ref(false)
 const search = () => {
   pageNum = 1
   console.log(value3.value[0])
@@ -457,7 +457,7 @@ const search = () => {
 }
 search()
 const load = () => {
-  if (!noMore && !loading.value) {
+  if (!noMore.value && !loading.value) {
     loading.value = true
     pageNum += 1
     axios.get('/article/list/' + pageNum + '/5', {
@@ -472,7 +472,8 @@ const load = () => {
 
         console.log(response.data)
         if (response.data.data.list.length == 0) {
-          noMore = true
+          loading.value = false
+          noMore.value = true
           return;
         }
         setTimeout(() => {
@@ -489,7 +490,7 @@ const load = () => {
   }
 }
 const loading = ref(false)
-const disabled = computed(() => loading.value || noMore)
+const disabled = computed(() => loading.value || noMore.value)
 
 
 

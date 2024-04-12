@@ -379,7 +379,7 @@ const attention = () => {
 }
 
 var pageNum: number = 1
-var noMore: boolean = false
+var noMore = ref(false)
 const search = () => {
   pageNum = 1
   console.log(value3.value[0])
@@ -394,7 +394,7 @@ const search = () => {
 }
 search()
 const load = () => {
-  if (!noMore && !loading.value) {
+  if (!noMore.value && !loading.value) {
     loading.value = true
     pageNum += 1
     axios.get('/article/list/' + pageNum + '/5', {
@@ -409,7 +409,8 @@ const load = () => {
 
         console.log(response.data)
         if (response.data.data.list.length == 0) {
-          noMore = true
+          loading.value = false
+          noMore.value = true
           return;
         }
         setTimeout(() => {
@@ -426,7 +427,7 @@ const load = () => {
   }
 }
 const loading = ref(false)
-const disabled = computed(() => loading.value || noMore)
+const disabled = computed(() => loading.value || noMore.value)
 
 
 
